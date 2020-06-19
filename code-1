@@ -1,0 +1,173 @@
+/**
+ * Sử dụng kiến thức đã học, tạo ra một ứng dụng danh bạ điện thoại, có các chức năng:
+ * - Nhập dữ liệu contact (name, phone number)
+ * - Sửa dữ liệu contact
+ * - Xoá contact
+ * - Tìm kiếm contact: có thể nhập vào tên (không dấu hoặc có dấu, chữ hoa hoặc chữ thường vẫn cho ra kết quả) hoặc 1 phần số điện thoại
+ */
+var readlineSync = require('readline-sync');
+var fs = require('fs');
+var contactArr = [];
+
+function showMenu() {
+    console.log('---- Contact Manager App ----');
+    console.log('1. Show All Contact');
+    console.log('2. Create New Contact');
+    console.log('3. Edit Existing Contact');
+    console.log('4. Delete Contact');
+    console.log('5. Find Contact By Name/Phone');
+    console.log('6. Save & Exit');
+
+    var options = readlineSync.question('> ');
+    switch (options) {
+        case '1':
+            showContactList();
+            showMenu();
+            break;
+        case '2':
+            createNewContact();
+            showMenu();
+            break;
+        case '3':
+            editContact();
+            showMenu();
+            break;
+        case '4':
+            deleteContact();
+            showMenu();
+            break;
+        case '5':
+            findContact();
+            showMenu();
+            break;
+        case '6':
+            saveContact();
+            break;
+        default:
+            console.log('Invalid Options');
+            showMenu();
+            break;
+    }
+}
+
+function loadData() {
+    var contactData = fs.readFileSync('./contact.json', { encoding: 'utf-8' });
+    contactArr = JSON.parse(contactData);
+}
+
+function showContactList() {
+    for (var contact of contactArr) {
+        console.log('Name: ' + contact.name + ', phone: ' + contact.phone);
+    }
+}
+
+function createNewContact() {
+    var newName = readlineSync.question('Enter name: ');
+    var newPhone = readlineSync.question('Enter phone number: ');
+
+    var newContact = {
+        name: newName,
+        phone: newPhone
+    }
+
+    contactArr.push(newContact);
+}
+
+function editContact() {
+    var editOption = readlineSync.question('Edit Contact - enter only \'name\' or \'phone\': ')
+    switch (editOption) {
+        case 'name':
+        case 'Name':
+            var existName = readlineSync.question('Enter Name To Edit: ');
+            for (var contact of contactArr) {
+                if (contact.name === existName) {
+                    var updateName = readlineSync.question('Update New Name: ');
+                    contact.name = updateName;
+                }
+            }
+            break;
+        case 'phone':
+        case 'Phone':
+            var existPhone = readlineSync.question('Enter Phone Number To Edit: ');
+            for (var contact of contactArr) {
+                if (contact.phone === existPhone) {
+                    var updatePhone = readlineSync.question('Update New Phone: ');
+                    contact.phone = updatePhone;
+                }
+            }
+            break;
+        default:
+            console.log('invalid options, enter only \'name\' or \'phone\'');
+            editContact();
+            break;
+    }
+}
+
+function convertStr(str) {
+    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+    str = str.replace(/đ/g, "d");
+    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+    str = str.replace(/Đ/g, "D");
+    return str;
+};
+
+function findContact(){
+    var findOption = readlineSync.question('Find Contact - enter only \'name\' or \'phone\': ')
+    switch (findOption) {
+        case 'name':
+        case 'Name':
+            var inputName = readlineSync.question('Find Contact By Name: ');
+            var existName = convertStr(inputName.toLowerCase());
+            for (var contact of contactArr) {
+                if (convertStr(contact.name.toLowerCase()) === existName) {
+                    console.log(contact.name, contact.phone)
+                }
+            }
+            break;
+        case 'phone':
+        case 'Phone':
+            var existPhone = readlineSync.question('Find Contact By Phone: ');
+            for (var contact of contactArr) {
+                if (contact.phone === existPhone) {
+                    console.log(contact.name, contact.phone)
+                }
+            }
+            break;
+        default:
+            console.log('invalid options, enter only \'name\' or \'phone\'');
+            findContact();
+            break;
+    }
+}
+
+function deleteContact() {
+    var name = readlineSync.question('Delete contact, type name: ');
+    for (var i = 0; i < contactArr.length; i++) {
+        if (contactArr[i].name === name) {
+            contactArr.splice(i, 1);
+            console.log('Delete Successfully');
+        }
+    }
+}
+
+function saveContact() {
+    var contactStr = JSON.stringify(contactArr);
+    fs.writeFileSync('./contact.json', contactStr);
+}
+
+function main() {
+    loadData();
+    showMenu();
+}
+
+main();
